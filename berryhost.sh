@@ -43,8 +43,7 @@ except:
 
 if [ "$MESSAGE_ID" = "NOT_FOUND" ]; then
   echo "❌ 未找到签到消息，请检查 Token 是否有效"
-  RESULT="❌ 失败！未找到签到消息"
-  # 跳到 TG 通知
+  RESULT="❌ 未找到签到消息"
 else
   echo "📌 MESSAGE_ID:     $MESSAGE_ID"
   echo "🤖 APPLICATION_ID: $APPLICATION_ID"
@@ -69,11 +68,10 @@ else
   HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
   BODY=$(echo "$RESPONSE" | head -n-1)
 
-  # ===== 结果判断 =====
   if [ "$HTTP_CODE" = "204" ]; then
     echo "✅ 成功！状态码: 204"
     echo "🎉 已成功点击 Claim Daily Reward！"
-    RESULT="✅ 签到成功！"
+    RESULT="✅ 领取成功！"
   else
     echo "❌ 失败！状态码: ${HTTP_CODE}"
     echo "   响应: ${BODY}"
@@ -91,9 +89,18 @@ if [ -n "$TG_BOT" ]; then
   TG_CHAT_ID=$(echo "$TG_BOT" | cut -d',' -f1)
   TG_TOKEN=$(echo "$TG_BOT" | cut -d',' -f2)
   RUN_TIME=$(date '+%Y-%m-%d %H:%M:%S')
-  MESSAGE="🎮 TheBerryHost 每日签到
+
+  if [[ "$RESULT" == ✅* ]]; then
+    REWARD_LINE="🎉 今日奖励: 💰 5 BerryCoins"
+  else
+    REWARD_LINE="🎉 今日奖励: 💰 0 BerryCoins"
+  fi
+
+  MESSAGE="🍇 TheBerryHost 每日领取
 🕐 运行时间: ${RUN_TIME}
-📊 签到结果: ${RESULT}"
+🎮 服务器: 🇬🇧 TheBerryHost
+📊 领取结果: ${RESULT}
+${REWARD_LINE}"
 
   curl -s -X POST "https://api.telegram.org/bot${TG_TOKEN}/sendMessage" \
     -d chat_id="${TG_CHAT_ID}" \
